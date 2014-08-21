@@ -1,4 +1,47 @@
-local console = {visible = false, keyCode = "`", delta = 0, logs = {}, linesPerConsole = 0, fontSize = 20, font = love.graphics.newFont(20), firstLine = 0, lastLine = 0, input = "", ps = "> "}
+local console = {
+
+  _VERSION     = 'love-console v0.1.0',
+  _DESCRIPTION = 'Simple love2d console overlay',
+  _URL         = 'https://github.com/hamsterready/love-console',
+  _LICENSE     = [[
+The MIT License (MIT)
+
+Copyright (c) 2014 Maciej Lopacinski
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+  ]],
+
+
+  -- hm, should it be stored in console or as module locals?
+  -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
+
+	visible = false, 
+	keyCode = "`", 
+	delta = 0, 
+	logs = {}, 
+	linesPerConsole = 0, 
+	fontSize = 20, 
+	font = nil, 
+	firstLine = 0, 
+	lastLine = 0, 
+	input = "", 
+	ps = "> "}
 
 function console.load( keyCode, fontSize, keyRepeat, inputCallback )
   love.keyboard.setKeyRepeat(keyRepeat or false)
