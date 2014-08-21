@@ -140,6 +140,10 @@ end
 
 
 function console.mousepressed( x, y, button )
+	if not console.visible then
+		return false
+	end
+
   local consumed = false
 
   if button == "wu" then
