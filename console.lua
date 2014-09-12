@@ -57,7 +57,7 @@ function console.load( keyCode, fontSize, keyRepeat, inputCallback )
 	console.colors["D"] = {r = 235, g = 197, b =  50, a = 255}
 	console.colors["E"] = {r = 222, g =  69, b =  61, a = 255}
 
-	console.inputCallback = inputCallback or defaultInputCallback
+	console.inputCallback = inputCallback or console.defaultInputCallback
 
 	console.resize(love.graphics.getWidth(), love.graphics.getHeight())
 end
@@ -174,7 +174,7 @@ end
 
 
 -- private stuff 
-function defaultInputCallback(t)
+function console.defaultInputCallback(t)
   if t == "/help" then
   	console.d(t)
     console.i("Available commands are: ")
