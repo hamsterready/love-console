@@ -91,4 +91,9 @@ end
  shall be invoked as first block in ``love.mousepressed(x, y, button)``; returns true if button was consumed by console, false otherwise
 
  - `` console.d(t), console.i(t), console.e(t) `` - append ``debug``, ``info`` or ``error`` message to the console
-   - `` t `` - string, message content
+ - `` t `` - string, message content
+
+- `console.defineCommand(name, description, implementation)` - Define a command like `/help`.
+  - `name` - The name of the command which must include the forward-slash (if desired).
+  - `description` - An explanation of the command shown by `/help`.
+  - `implementation` - A function providing the logic for the command.  It receives no arguments and the package ignores any return values.

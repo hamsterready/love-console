@@ -40,8 +40,21 @@ SOFTWARE.
 	font = nil, 
 	firstLine = 0, 
 	lastLine = 0, 
-	input = "", 
-	ps = "> "}
+        input = "",
+        ps = "> ",
+
+        -- This table has as its keys the names of commands as
+        -- strings, which the user must type to run the command.  The
+        -- values are themselves tables with two properties:
+        --
+        -- 1. 'description' A string of information to show via the
+        -- /help command.
+        --
+        -- 2. 'implementation' A function implementing the command.
+        --
+        -- See the function defineCommand() for examples of adding
+        -- entries to this table.
+        commands = {} }
 
 function console.load( keyCode, fontSize, keyRepeat, inputCallback )
   love.keyboard.setKeyRepeat(keyRepeat or false)
@@ -172,26 +185,48 @@ function console.e(str)
 	a(str, 'E')
 end
 
+function console.defineCommand(name, description, implementation)
+    console.commands[name] = {
+        ["description"] = description,
+        ["implementation"] = implementation,
+    }
+end
 
--- private stuff 
-function console.defaultInputCallback(t)
-  if t == "/help" then
-  	console.d(t)
-    console.i("Available commands are: ")
-    console.i("  /help - show this help")
-    console.i("  /clear - clears console")
-    console.i("  /quit - quits your app")
-  elseif t == "/quit" then
-  	console.d(t)
-  	console.i("Time to quit, emitting love.event.quit()")
-    love.event.quit()
-  elseif t == "/clear" then
-  	console.firstLine = 0
-  	console.lastLine = 0
-  	console.logs = {}
-  elseif t ~= "" then
-    console.e("Command \"" .. t .. "\" not supported, type /help for help.")
-  end
+-- private stuff
+
+console.defineCommand(
+    "/help",
+    "Shows information on all commands.",
+    function ()
+        console.i("Available commands are:")
+        for name,data in pairs(console.commands) do
+            console.i(string.format("  %s - %s", name, data.description))
+        end
+    end
+)
+
+console.defineCommand(
+    "/quit",
+    "Quits your application.",
+    function () love.event.quit() end
+)
+
+console.defineCommand(
+    "/clear",
+    "Clears the console.",
+    function ()
+        console.firstLine = 0
+        console.lastLine = 0
+        console.logs = {}
+    end
+)
+
+function console.defaultInputCallback(name)
+    if console.commands[name] ~= nil then
+        console.commands[name].implementation()
+    else
+        console.e("Command \"" .. name .. "\" not supported, type /help for help.")
+    end
 end
 
 function a(str, level)
