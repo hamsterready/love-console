@@ -121,24 +121,24 @@ function console.draw()
 	love.graphics.setColor(23,55,86, 190)
 	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
 	love.graphics.setColor(23,55,86, 255)
-	love.graphics.rectangle("fill", console.x, console.h, console.w, console.lineHeight)
+	love.graphics.rectangle("fill", console.x, console.y + console.h, console.w, console.lineHeight)
 	love.graphics.setColor(215,213,174, 255)
 	love.graphics.setFont(console.font)
-	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.h + (console.lineHeight - console.fontSize) / 2 -1 )
+	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.y + console.h + (console.lineHeight - console.fontSize) / 2 -1 )
 
 	if console.firstLine > 0 then
-		love.graphics.print("^", love.graphics.getWidth() - console.margin, console.margin)
+		love.graphics.print("^", console.x + console.w - console.margin, console.y + console.margin)
 	end
 
 	if console.lastLine < #console.logs then
-		love.graphics.print("v", love.graphics.getWidth() - console.margin, console.h - console.margin * 2)
+		love.graphics.print("v", console.x + console.w - console.margin, console.y + console.h - console.margin * 2)
 	end
 
 	for i, t in pairs(console.logs) do
 		if i > console.firstLine and i <= console.lastLine then
 			local color = console.colors[t.level]
 			love.graphics.setColor(color.r, color.g, color.b, color.a)
-			love.graphics.print(t.msg, console.margin, (i - console.firstLine)*console.lineHeight)
+			love.graphics.print(t.msg, console.x + console.margin, console.y + (i - console.firstLine)*console.lineHeight)
 		end
 	end
 
