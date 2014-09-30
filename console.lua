@@ -118,8 +118,20 @@ function console.draw()
 
 
 	-- backup
+	love.graphics.push()
 	local r, g, b, a = love.graphics.getColor()
 	local font = love.graphics.getFont()
+	local blend = love.graphics.getBlendMode()
+	local cr, cg, cb, ca = love.graphics.getColorMask()
+	local sx, sy, sw, sh = love.graphics.getScissor()
+	local canvas = love.graphics.getCanvas()
+	
+	--set everything to default
+	love.graphics.origin()
+	love.graphics.setBlendMode("alpha")
+	love.graphics.setColorMask(true,true,true,true)
+	love.graphics.setCanvas()
+	love.graphics.setScissor()
 
 	-- draw console
 	love.graphics.setColor(console.colors.background)
@@ -150,8 +162,13 @@ function console.draw()
 
 
 	-- rollback
+	love.graphics.setCanvas(canvas)
+	love.graphics.pop()
 	love.graphics.setFont(font)
 	love.graphics.setColor(r, g, b, a)
+	love.graphics.setBlendMode(blend)
+	love.graphics.setColorMask(cr, cg, cb, ca)
+	love.graphics.setScissor(sx, sy, sw, sh)
 end
 
 
