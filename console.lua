@@ -121,7 +121,7 @@ function console.draw()
 	love.graphics.setColor(23,55,86, 190)
 	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
 	love.graphics.setColor(23,55,86, 255)
-	love.graphics.rectangle("fill", console.x, console.h, console.w, console.lineHeight)
+	love.graphics.rectangle("fill", console.x, console.y + console.h, console.w, console.lineHeight)
 	love.graphics.setColor(215,213,174, 255)
 	love.graphics.setFont(console.font)
 	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.h + (console.lineHeight - console.fontSize) / 2 -1 )
@@ -153,7 +153,15 @@ end
 
 
 function console.mousepressed( x, y, button )
-	if not console.visible or x > console.h then
+	if not console.visible then
+		return false
+	end
+	
+	if not (x >= console.x and x <= (console.x + console.w) then
+		return false
+	end
+	
+	if not (y >= console.y and y <= (console.y + console.h + console.lineHeight) then
 		return false
 	end
 
