@@ -38,6 +38,10 @@ function love.keypressed(key)
   end
 end
 
+function love.textinput(t)
+  console.textInput(t)
+end
+
 function love.resize( w, h )
   -- Step 5: if you application allows to resize window then call console.resize on love.resize
   console.resize(w, h)
