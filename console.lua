@@ -42,6 +42,7 @@ SOFTWARE.
 	lastLine = 0, 
         input = "",
         ps = "> ",
+        useScissors = false,
 
         -- This table has as its keys the names of commands as
         -- strings, which the user must type to run the command.  The
@@ -56,9 +57,10 @@ SOFTWARE.
         -- entries to this table.
         commands = {} }
 
-function console.load( keyCode, fontSize, keyRepeat, inputCallback )
+function console.load( keyCode, fontSize, keyRepeat, inputCallback, useScissors )
 	love.keyboard.setKeyRepeat(keyRepeat or false)
 
+	console.useScissors = useScissors or console.useScissors
 	console.keyCode = keyCode or console.keyCode
 	console.fontSize = fontSize or console.fontSize
 	console.margin = console.fontSize
@@ -131,7 +133,11 @@ function console.draw()
 	love.graphics.setBlendMode("alpha")
 	love.graphics.setColorMask(true,true,true,true)
 	love.graphics.setCanvas()
-	love.graphics.setScissor()
+	if not console.useScissors then
+		love.graphics.setScissor()
+	else
+		love.graphics.setScissor(console.x, console.y, console.w, console.h + console.lineHeight)
+	end
 
 	-- draw console
 	love.graphics.setColor(console.colors.background)
