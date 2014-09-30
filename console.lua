@@ -57,7 +57,7 @@ SOFTWARE.
         commands = {} }
 
 function console.load( keyCode, fontSize, keyRepeat, inputCallback )
-  love.keyboard.setKeyRepeat(keyRepeat or false)
+	love.keyboard.setKeyRepeat(keyRepeat or false)
 
 	console.keyCode = keyCode or console.keyCode
 	console.fontSize = fontSize or console.fontSize
@@ -104,7 +104,7 @@ function console.keypressed(key)
 end
 
 function console.update( dt )
-  console.delta = console.delta + dt
+	console.delta = console.delta + dt
 end
 
 function console.draw()
@@ -153,21 +153,21 @@ end
 
 
 function console.mousepressed( x, y, button )
-	if not console.visible then
+	if not console.visible or x > console.h then
 		return false
 	end
 
-  local consumed = false
+	local consumed = false
 
-  if button == "wu" then
-  	console.firstLine = math.max(1 - console.linesPerConsole, console.firstLine - 1)
- 		consumed = true
-  end
+	if button == "wu" then
+		console.firstLine = math.max(1 - console.linesPerConsole, console.firstLine - 1)
+		consumed = true
+	end
 
-  if button == "wd" then
-  	console.firstLine = math.min(#console.logs - 1, console.firstLine + 1)
-  	consumed = true
-  end
+	if button == "wd" then
+		console.firstLine = math.min(#console.logs - 1, console.firstLine + 1)
+		consumed = true
+	end
 	console.lastLine = console.firstLine + console.linesPerConsole
 
 	return consumed
@@ -186,47 +186,47 @@ function console.e(str)
 end
 
 function console.defineCommand(name, description, implementation)
-    console.commands[name] = {
-        ["description"] = description,
-        ["implementation"] = implementation,
-    }
+	console.commands[name] = {
+		["description"] = description,
+		["implementation"] = implementation,
+	}
 end
 
 -- private stuff
 
 console.defineCommand(
-    "/help",
-    "Shows information on all commands.",
-    function ()
-        console.i("Available commands are:")
-        for name,data in pairs(console.commands) do
-            console.i(string.format("  %s - %s", name, data.description))
-        end
-    end
+	"/help",
+	"Shows information on all commands.",
+	function ()
+		console.i("Available commands are:")
+		for name,data in pairs(console.commands) do
+			console.i(string.format("  %s - %s", name, data.description))
+		end
+	end
 )
 
 console.defineCommand(
-    "/quit",
-    "Quits your application.",
-    function () love.event.quit() end
+	"/quit",
+	"Quits your application.",
+	function () love.event.quit() end
 )
 
 console.defineCommand(
-    "/clear",
-    "Clears the console.",
-    function ()
-        console.firstLine = 0
-        console.lastLine = 0
-        console.logs = {}
-    end
+	"/clear",
+	"Clears the console.",
+	function ()
+		console.firstLine = 0
+		console.lastLine = 0
+		console.logs = {}
+	end
 )
 
 function console.defaultInputCallback(name)
-    if console.commands[name] ~= nil then
-        console.commands[name].implementation()
-    else
-        console.e("Command \"" .. name .. "\" not supported, type /help for help.")
-    end
+	if console.commands[name] ~= nil then
+		console.commands[name].implementation()
+	else
+		console.e("Command \"" .. name .. "\" not supported, type /help for help.")
+	end
 end
 
 function a(str, level)
