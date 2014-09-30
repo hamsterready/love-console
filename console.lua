@@ -32,7 +32,7 @@ SOFTWARE.
   -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
 
 	visible = false, 
-	keyCode = "`", 
+	keyCode = "f2", 
 	delta = 0, 
 	logs = {}, 
 	linesPerConsole = 0, 
