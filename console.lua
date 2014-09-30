@@ -80,6 +80,10 @@ function console.resize( w, h )
 	console.linesPerConsole = math.floor((console.h - console.margin * 2) / console.lineHeight)
 end
 
+function console.textInput(t)
+	console.input = console.input .. t
+end
+
 function console.keypressed(key) 
 	if key ~= "`" and console.visible then
 		if key == "return" then
@@ -89,18 +93,14 @@ function console.keypressed(key)
 			console.input = ""
 		elseif key == "backspace" then
 			console.input = string.sub(console.input, 0, #console.input - 1)
-		else
-			console.input = console.input .. key
 		end
 		return true
-	end
-
-  if key == "`" then
-  	console.visible = not console.visible
-  	return true
-  end
-
-  return false
+	elseif key == "`" then
+		console.visible = not console.visible
+  		return true
+  	end
+  	
+	return false
 end
 
 function console.update( dt )
