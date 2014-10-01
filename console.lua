@@ -122,11 +122,14 @@ function console.draw()
 	local font = love.graphics.getFont()
 
 	-- draw console
-	love.graphics.setColor(console.colors.background)
+	local color = console.colors.background
+	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
-	love.graphics.setColor(console.colors.input)
+	color = console.colors.input
+	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.rectangle("fill", console.x, console.h, console.w, console.lineHeight)
-	love.graphics.setColor(console.colors.default)
+	color = console.colors.default
+	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.setFont(console.font)
 	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.h + (console.lineHeight - console.fontSize) / 2 -1 )
 
