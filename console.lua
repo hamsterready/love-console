@@ -69,6 +69,10 @@ function console.load( keyCode, fontSize, keyRepeat, inputCallback )
 	console.colors["I"] = {r = 251, g = 241, b = 213, a = 255}
 	console.colors["D"] = {r = 235, g = 197, b =  50, a = 255}
 	console.colors["E"] = {r = 222, g =  69, b =  61, a = 255}
+	
+	console.colors["background"] = 	{r = 23, g = 55, b = 86, a = 190}
+	console.colors["input"]      = 	{r = 23, g = 55, b = 86, a = 255}
+	console.colors["default"]    = 	{r = 215, g = 213, b = 174, a = 255}
 
 	console.inputCallback = inputCallback or console.defaultInputCallback
 
@@ -118,11 +122,14 @@ function console.draw()
 	local font = love.graphics.getFont()
 
 	-- draw console
-	love.graphics.setColor(23,55,86, 190)
+	local color = console.colors.background
+	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
-	love.graphics.setColor(23,55,86, 255)
-	love.graphics.rectangle("fill", console.x, console.y + console.h, console.w, console.lineHeight)
-	love.graphics.setColor(215,213,174, 255)
+	color = console.colors.input
+	love.graphics.setColor(color.r, color.g, color.b, color.a)
+	love.graphics.rectangle("fill", console.x, console.h, console.w, console.lineHeight)
+	color = console.colors.default
+	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.setFont(console.font)
 	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.h + (console.lineHeight - console.fontSize) / 2 -1 )
 
