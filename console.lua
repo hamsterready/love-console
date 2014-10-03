@@ -164,11 +164,11 @@ function console.mousepressed( x, y, button )
 		return false
 	end
 	
-	if not (x >= console.x and x <= (console.x + console.w) then
+	if not (x >= console.x and x <= (console.x + console.w)) then
 		return false
 	end
 	
-	if not (y >= console.y and y <= (console.y + console.h + console.lineHeight) then
+	if not (y >= console.y and y <= (console.y + console.h + console.lineHeight)) then
 		return false
 	end
 
