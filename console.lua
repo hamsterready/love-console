@@ -55,14 +55,15 @@ local console = {
 	commands = {}
 }
 
-function console.load(fontSize, keyRepeat, inputCallback )
+function console.load(font, keyRepeat, inputCallback)
 	love.keyboard.setKeyRepeat(keyRepeat or false)
 
-	console.fontSize = fontSize or console.fontSize
-	console.margin = console.fontSize
-	console.font = love.graphics.newFont(console.fontSize)
-	console.lineHeight = console.fontSize * 1.4
+	console.font		= font or love.graphics.newFont(console.fontSize)
+	console.fontSize	= font and font:getHeight() or console.fontSize
+	console.margin		= console.fontSize
+	console.lineHeight	= console.fontSize * 1.3
 	console.x, console.y = 0, 0
+
 	console.colors = {}
 	console.colors["I"] = {r = 251, g = 241, b = 213, a = 255}
 	console.colors["D"] = {r = 235, g = 197, b =  50, a = 255}
