@@ -1,65 +1,63 @@
 local console = {
+	_LICENSE = [[
+		The MIT License (MIT)
 
-  _VERSION     = 'love-console v0.1.0',
-  _DESCRIPTION = 'Simple love2d console overlay',
-  _URL         = 'https://github.com/hamsterready/love-console',
-  _LICENSE     = [[
-The MIT License (MIT)
+		Copyright (c) 2014 Maciej Lopacinski
 
-Copyright (c) 2014 Maciej Lopacinski
+		Permission is hereby granted, free of charge, to any person obtaining a copy
+		of this software and associated documentation files (the "Software"), to deal
+		in the Software without restriction, including without limitation the rights
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		copies of the Software, and to permit persons to whom the Software is
+		furnished to do so, subject to the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+		The above copyright notice and this permission notice shall be included in all
+		copies or substantial portions of the Software.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+	]],
+	_VERSION = 'love-console v0.1.0',
+	_DESCRIPTION = 'Simple love2d console overlay',
+	_URL = 'https://github.com/hamsterready/love-console',
+	_KEY_TOGGLE = "`",
+	_KEY_SUBMIT = "return",
+	_KEY_CLEAR = "escape",
+	_KEY_DELETE = "backspace",
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-  ]],
+	visible = false,
+	delta = 0,
+	logs = {},
+	linesPerConsole = 0,
+	fontSize = 20,
+	font = nil,
+	firstLine = 0,
+	lastLine = 0,
+	input = "",
+	ps = "> ",
 
+	-- This table has as its keys the names of commands as
+	-- strings, which the user must type to run the command. The
+	-- values are themselves tables with two properties:
+	--
+	-- 1. 'description' A string of information to show via the
+	-- /help command.
+	--
+	-- 2. 'implementation' A function implementing the command.
+	--
+	-- See the function defineCommand() for examples of adding
+	-- entries to this table.
+	commands = {}
+}
 
-  -- hm, should it be stored in console or as module locals?
-  -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
-
-	visible = false, 
-	keyCode = "`", 
-	delta = 0, 
-	logs = {}, 
-	linesPerConsole = 0, 
-	fontSize = 20, 
-	font = nil, 
-	firstLine = 0, 
-	lastLine = 0, 
-        input = "",
-        ps = "> ",
-
-        -- This table has as its keys the names of commands as
-        -- strings, which the user must type to run the command.  The
-        -- values are themselves tables with two properties:
-        --
-        -- 1. 'description' A string of information to show via the
-        -- /help command.
-        --
-        -- 2. 'implementation' A function implementing the command.
-        --
-        -- See the function defineCommand() for examples of adding
-        -- entries to this table.
-        commands = {} }
-
-function console.load( keyCode, fontSize, keyRepeat, inputCallback )
+function console.load(fontSize, keyRepeat, inputCallback )
 	love.keyboard.setKeyRepeat(keyRepeat or false)
 
-	console.keyCode = keyCode or console.keyCode
 	console.fontSize = fontSize or console.fontSize
 	console.margin = console.fontSize
 	console.font = love.graphics.newFont(console.fontSize)
@@ -79,27 +77,36 @@ function console.load( keyCode, fontSize, keyRepeat, inputCallback )
 	console.resize(love.graphics.getWidth(), love.graphics.getHeight())
 end
 
+function console.newHotkeys(toggle, submit, clear, delete)
+	console._KEY_TOGGLE = toggle or console._KEY_TOGGLE
+	console._KEY_SUBMIT = submit or console._KEY_SUBMIT
+	console._KEY_CLEAR = clear or console._KEY_CLEAR
+	console._KEY_DELETE = delete or console._KEY_DELETE
+end
+
 function console.resize( w, h )
-	console.w, console.h = w, h / 5
+	console.w, console.h = w, h / 3
 	console.linesPerConsole = math.floor((console.h - console.margin * 2) / console.lineHeight)
 end
 
 function console.textInput(t)
-	console.input = console.input .. t
+	if t ~= console._KEY_TOGGLE and console.visible then
+		console.input = console.input .. t
+	end
 end
 
 function console.keypressed(key) 
-	if key ~= "`" and console.visible then
-		if key == "return" then
+	if key ~= console._KEY_TOGGLE and console.visible then
+		if key == console._KEY_SUBMIT then
 			console.inputCallback(console.input)
 			console.input = ""
-		elseif key == "escape" then
+		elseif key == console._KEY_CLEAR then
 			console.input = ""
-		elseif key == "backspace" then
+		elseif key == console._KEY_DELETE then
 			console.input = string.sub(console.input, 0, #console.input - 1)
 		end
 		return true
-	elseif key == "`" then
+	elseif key == console._KEY_TOGGLE then
 		console.visible = not console.visible
   		return true
   	end
@@ -115,7 +122,6 @@ function console.draw()
 	if not console.visible then
 		return
 	end
-
 
 	-- backup
 	local r, g, b, a = love.graphics.getColor()
@@ -149,15 +155,10 @@ function console.draw()
 		end
 	end
 
-
-
-
 	-- rollback
 	love.graphics.setFont(font)
 	love.graphics.setColor(r, g, b, a)
 end
-
-
 
 function console.mousepressed( x, y, button )
 	if not console.visible then
@@ -244,10 +245,23 @@ function console.defaultInputCallback(name)
 	end
 end
 
+-- http://stackoverflow.com/questions/1426954
+function string_split(self, pat)
+	pat = pat or '%s+'
+	local st, g = 1, self:gmatch("()("..pat..")")
+	local function getter(segs, seps, sep, cap1, ...)
+		st = sep and seps + #sep
+		return self:sub(segs, (seps or 0) - 1), cap1 or sep, ...
+	end
+	return function() if st then return getter(st, g()) end end
+end
+
 function a(str, level)
-	table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
-	console.lastLine = #console.logs
-	console.firstLine = console.lastLine - console.linesPerConsole
+	for str in string_split(str, "\n") do
+		table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
+		console.lastLine = #console.logs
+		console.firstLine = console.lastLine - console.linesPerConsole
+	end
 end
 
 -- auto-initialize so that console.load() is optional
