@@ -60,6 +60,11 @@ local function toboolean(v)
 	return (type(v) == "string" and v == "true") or (type(v) == "string" and v == "1") or (type(v) == "number" and v ~= 0) or (type(v) == "boolean" and v)
 end
 
+-- http://lua-users.org/wiki/StringTrim trim2
+local function trim(s)
+  return s:match "^%s*(.-)%s*$"
+end
+
 -- http://wiki.interfaceware.com/534.html
 local function string_split(s, d)
 	local t = {}
@@ -336,15 +341,19 @@ console.defineCommand(
 	end
 )
 
-function console.defaultInputCallback(line)
-	local args = merge_quoted(string_split(line, " "))
-	local name = args[1]
-	table.remove(args, 1)
-	if console.commands[name] ~= nil then
-		-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
-		console.commands[name].implementation(merge_quoted(args))
-	else
-		console.e("Command \"" .. name .. "\" not supported, type help for help.")
+function console.defaultInputCallback(input)
+	local commands = string_split(input, ";")
+
+	for _, line in ipairs(commands) do
+		local args = merge_quoted(string_split(trim(line), " "))
+		local name = args[1]
+		table.remove(args, 1)
+		if console.commands[name] ~= nil then
+			-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
+			console.commands[name].implementation(merge_quoted(args))
+		else
+			console.e("Command \"" .. name .. "\" not supported, type help for help.")
+		end
 	end
 end
 
