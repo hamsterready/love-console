@@ -247,7 +247,7 @@ function console.defaultInputCallback(name)
 end
 
 -- http://stackoverflow.com/questions/1426954
-function string_split(self, pat)
+local function string_split(self, pat)
 	pat = pat or '%s+'
 	local st, g = 1, self:gmatch("()("..pat..")")
 	local function getter(segs, seps, sep, cap1, ...)
@@ -267,7 +267,6 @@ end
 
 -- auto-initialize so that console.load() is optional
 console.load()
-console.i("Welcome to love-console v0.1.0")
 console.i("Use console.i(text) to append info msg to the console")
 console.d("Use console.d(text) to append debug msg to the console")
 console.e("Use console.e(text) to append error msg to the console")
