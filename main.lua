@@ -3,11 +3,11 @@ local console = require 'console'
 function love.load()
   -- Step 1: load console, parameters are optional, defaults enumerated below
   --  key to open/close console == `
-  --  font size == 20
+  --  font size == 14
   --  nil == function called when user press return, see console.lua and defaultInputCallback function
   --  false = no key repeat by default, pressing (and not releasing backspace) will act in a strange way
   -- it is fine not to run console.load() 
-  -- console.load("`", 20, false, nil)
+  console.load(love.graphics.newFont("inconsolata/Inconsolata.otf", 16))
 end
 
 function love.update( dt )

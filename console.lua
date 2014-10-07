@@ -40,6 +40,7 @@ local console = {
 	lastLine = 0,
 	input = "",
 	ps = "> ",
+	motd = "Greetings, traveler!\nType \"help\" for an index of available commands.",
 
 	-- This table has as its keys the names of commands as
 	-- strings, which the user must type to run the command. The
@@ -54,6 +55,62 @@ local console = {
 	-- entries to this table.
 	commands = {}
 }
+
+local function toboolean(v)
+	return (type(v) == "string" and v == "true") or (type(v) == "string" and v == "1") or (type(v) == "number" and v ~= 0) or (type(v) == "boolean" and v)
+end
+
+-- http://wiki.interfaceware.com/534.html
+local function string_split(s, d)
+	local t = {}
+	local i = 0
+	local f
+	local match = '(.-)' .. d .. '()'
+	
+	if string.find(s, d) == nil then
+		return {s}
+	end
+	
+	for sub, j in string.gmatch(s, match) do
+		i = i + 1
+		t[i] = sub
+		f = j
+	end
+	
+	if i ~= 0 then
+		t[i+1] = string.sub(s, f)
+	end
+	
+	return t
+end
+
+local function merge_quoted(t)
+	local ret = {}
+	local merging = false
+	local buf = ""
+	for k, v in ipairs(t) do
+		local f, l = v:sub(1,1), v:sub(v:len())
+		if f == "\"" and l ~= "\"" then
+			merging = true
+			buf = v
+		else
+			if merging then
+				buf = buf .. " " .. v
+				if l == "\"" then
+					merging = false
+					table.insert(ret, buf:sub(2,-2))
+				end
+			else
+				if f == "\"" and l == f then
+					table.insert(ret, v:sub(2, -2))
+				else
+					table.insert(ret, v)
+				end
+			end
+		end
+	end
+	return ret
+end
 
 function console.load(font, keyRepeat, inputCallback)
 	love.keyboard.setKeyRepeat(keyRepeat or false)
@@ -85,9 +142,14 @@ function console.newHotkeys(toggle, submit, clear, delete)
 	console._KEY_DELETE = delete or console._KEY_DELETE
 end
 
+function console.setMotd(message)
+	console.motd = message
+end
+
 function console.resize( w, h )
 	console.w, console.h = w, h / 3
 	console.linesPerConsole = math.floor((console.h - console.margin * 2) / console.lineHeight)
+	console.lastLine = console.firstLine + console.linesPerConsole
 end
 
 function console.textInput(t)
@@ -202,34 +264,37 @@ function console.e(str)
 	a(str, 'E')
 end
 
-function console.defineCommand(name, description, implementation)
+function console.defineCommand(name, description, implementation, hidden)
 	console.commands[name] = {
-		["description"] = description,
-		["implementation"] = implementation,
+		description = description,
+		implementation = implementation,
+		hidden = hidden or false
 	}
 end
 
 -- private stuff
 
 console.defineCommand(
-	"/help",
+	"help",
 	"Shows information on all commands.",
 	function ()
 		console.i("Available commands are:")
 		for name,data in pairs(console.commands) do
-			console.i(string.format("  %s - %s", name, data.description))
+			if not data.hidden then
+				console.i(string.format("  %s - %s", name, data.description))
+			end
 		end
 	end
 )
 
 console.defineCommand(
-	"/quit",
+	"quit",
 	"Quits your application.",
 	function () love.event.quit() end
 )
 
 console.defineCommand(
-	"/clear",
+	"clear",
 	"Clears the console.",
 	function ()
 		console.firstLine = 0
@@ -238,11 +303,48 @@ console.defineCommand(
 	end
 )
 
-function console.defaultInputCallback(name)
+console.defineCommand(
+	"sv_cheats",
+	"~It is a mystery~",
+	function(args)
+		local change = toboolean(dopefish)
+		dopefish = toboolean(args[1])
+		change = dopefish ~= change
+		if not change then
+			console.e("No change")
+			return
+		end
+		if dopefish then
+			console.e("The rain in spain stays mainly in the plain.")
+		else
+			console.i("How now brown cow.")
+		end
+	end,
+	true
+)
+
+console.defineCommand(
+	"motd",
+	"Shows/sets the intro message.",
+	function(args)
+		if args[1] then
+			console.motd = args[1]
+			console.i("Motd updated.")
+		else
+			console.i(console.motd)
+		end
+	end
+)
+
+function console.defaultInputCallback(line)
+	local args = merge_quoted(string_split(line, " "))
+	local name = args[1]
+	table.remove(args, 1)
 	if console.commands[name] ~= nil then
-		console.commands[name].implementation()
+		-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
+		console.commands[name].implementation(merge_quoted(args))
 	else
-		console.e("Command \"" .. name .. "\" not supported, type /help for help.")
+		console.e("Command \"" .. name .. "\" not supported, type help for help.")
 	end
 end
 
@@ -267,9 +369,6 @@ end
 
 -- auto-initialize so that console.load() is optional
 console.load()
-console.i("Use console.i(text) to append info msg to the console")
-console.d("Use console.d(text) to append debug msg to the console")
-console.e("Use console.e(text) to append error msg to the console")
-
+console.i(console.motd)
 
 return console
