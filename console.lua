@@ -29,10 +29,16 @@ local console = {
 	_KEY_SUBMIT = "return",
 	_KEY_CLEAR = "escape",
 	_KEY_DELETE = "backspace",
+	_KEY_UP = "up",
+	_KEY_DOWN = "down",
+	_KEY_PAGEDOWN = "pagedown",
+	_KEY_PAGEUP = "pageup",
 
 	visible = false,
 	delta = 0,
 	logs = {},
+	history = {},
+	historyPosition = 0,
 	linesPerConsole = 0,
 	fontSize = 20,
 	font = nil,
@@ -62,7 +68,8 @@ end
 
 -- http://lua-users.org/wiki/StringTrim trim2
 local function trim(s)
-  return s:match "^%s*(.-)%s*$"
+	s = s or ""
+	return s:match "^%s*(.-)%s*$"
 end
 
 -- http://wiki.interfaceware.com/534.html
@@ -123,7 +130,8 @@ function console.load(font, keyRepeat, inputCallback)
 	console.font		= font or love.graphics.newFont(console.fontSize)
 	console.fontSize	= font and font:getHeight() or console.fontSize
 	console.margin		= console.fontSize
-	console.lineHeight	= console.fontSize * 1.3
+	console.lineSpacing	= 1.25
+	console.lineHeight	= console.fontSize * console.lineSpacing
 	console.x, console.y = 0, 0
 
 	console.colors = {}
@@ -153,32 +161,73 @@ end
 
 function console.resize( w, h )
 	console.w, console.h = w, h / 3
+	console.y = console.lineHeight - console.lineHeight * console.lineSpacing
+
 	console.linesPerConsole = math.floor((console.h - console.margin * 2) / console.lineHeight)
+
+	console.h = math.floor(console.linesPerConsole * console.lineHeight + console.margin * 2)
+
+	console.firstLine = console.lastLine - console.linesPerConsole
 	console.lastLine = console.firstLine + console.linesPerConsole
 end
 
-function console.textInput(t)
+function console.textinput(t)
 	if t ~= console._KEY_TOGGLE and console.visible then
 		console.input = console.input .. t
 	end
 end
 
-function console.keypressed(key) 
+function console.keypressed(key)
+	local function push_history(input)
+		local trimmed = trim(console.input)
+		local valid = trimmed ~= ""
+		if valid then
+			table.insert(console.history, trimmed)
+			console.historyPosition = #console.history
+		end
+		console.input = ""
+		return valid
+	end
 	if key ~= console._KEY_TOGGLE and console.visible then
 		if key == console._KEY_SUBMIT then
-			console.inputCallback(console.input)
-			console.input = ""
+			local msg = console.input
+			if push_history() then
+				console.inputCallback(msg)
+			end
 		elseif key == console._KEY_CLEAR then
 			console.input = ""
 		elseif key == console._KEY_DELETE then
 			console.input = string.sub(console.input, 0, #console.input - 1)
 		end
+
+		-- history traversal
+		if #console.history > 0 then
+			if key == console._KEY_UP then
+				console.historyPosition = math.min(math.max(console.historyPosition - 1, 1), #console.history)
+				console.input = console.history[console.historyPosition]
+			elseif key == console._KEY_DOWN then
+				local pushing = console.historyPosition + 1 == #console.history + 1
+				console.historyPosition = math.min(console.historyPosition + 1, #console.history)
+				console.input = console.history[console.historyPosition]
+				if pushing then
+					console.input = ""
+				end
+			end
+		end
+		
+		if key == console._KEY_PAGEUP then
+			console.firstLine = math.max(0, console.firstLine - console.linesPerConsole)
+			console.lastLine = console.firstLine + console.linesPerConsole
+		elseif key == console._KEY_PAGEDOWN then
+			console.firstLine = math.min(console.firstLine + console.linesPerConsole, #console.logs - console.linesPerConsole)
+			console.lastLine = console.firstLine + console.linesPerConsole
+		end
+
 		return true
 	elseif key == console._KEY_TOGGLE then
 		console.visible = not console.visible
-  		return true
-  	end
-  	
+		return true
+	end
 	return false
 end
 
@@ -201,7 +250,7 @@ function console.draw()
 	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
 	color = console.colors.input
 	love.graphics.setColor(color.r, color.g, color.b, color.a)
-	love.graphics.rectangle("fill", console.x, console.h, console.w, console.lineHeight)
+	love.graphics.rectangle("fill", console.x, console.y + console.h, console.w, console.lineHeight)
 	color = console.colors.default
 	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.setFont(console.font)
@@ -244,12 +293,12 @@ function console.mousepressed( x, y, button )
 	local consumed = false
 
 	if button == "wu" then
-		console.firstLine = math.max(1 - console.linesPerConsole, console.firstLine - 1)
+		console.firstLine = math.max(0, console.firstLine - 1)
 		consumed = true
 	end
 
 	if button == "wd" then
-		console.firstLine = math.min(#console.logs - 1, console.firstLine + 1)
+		console.firstLine = math.min(#console.logs - console.linesPerConsole, console.firstLine + 1)
 		consumed = true
 	end
 	console.lastLine = console.firstLine + console.linesPerConsole
@@ -311,9 +360,9 @@ console.defineCommand(
 console.defineCommand(
 	"sv_cheats",
 	"~It is a mystery~",
-	function(args)
+	function(enable)
 		local change = toboolean(dopefish)
-		dopefish = toboolean(args[1])
+		dopefish = toboolean(enable)
 		change = dopefish ~= change
 		if not change then
 			console.e("No change")
@@ -331,9 +380,9 @@ console.defineCommand(
 console.defineCommand(
 	"motd",
 	"Shows/sets the intro message.",
-	function(args)
-		if args[1] then
-			console.motd = args[1]
+	function(motd)
+		if motd then
+			console.motd = motd
 			console.i("Motd updated.")
 		else
 			console.i(console.motd)
@@ -349,30 +398,25 @@ function console.defaultInputCallback(input)
 		local name = args[1]
 		table.remove(args, 1)
 		if console.commands[name] ~= nil then
-			-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
-			console.commands[name].implementation(merge_quoted(args))
+			local status, error = pcall(function()
+				-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
+				console.commands[name].implementation(unpack(merge_quoted(args)))
+			end)
+			if not status then
+				console.e(error)
+			end
 		else
 			console.e("Command \"" .. name .. "\" not supported, type help for help.")
 		end
 	end
 end
 
--- http://stackoverflow.com/questions/1426954
-local function string_split(self, pat)
-	pat = pat or '%s+'
-	local st, g = 1, self:gmatch("()("..pat..")")
-	local function getter(segs, seps, sep, cap1, ...)
-		st = sep and seps + #sep
-		return self:sub(segs, (seps or 0) - 1), cap1 or sep, ...
-	end
-	return function() if st then return getter(st, g()) end end
-end
-
 function a(str, level)
-	for str in string_split(str, "\n") do
+	for _, str in ipairs(string_split(str, "\n")) do
 		table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
 		console.lastLine = #console.logs
 		console.firstLine = console.lastLine - console.linesPerConsole
+		print(console.logs[console.lastLine].msg)
 	end
 end
 
