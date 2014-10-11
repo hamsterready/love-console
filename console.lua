@@ -318,6 +318,10 @@ function console.e(str)
 	a(str, 'E')
 end
 
+function console.clearCommand(name)
+	console.commands[name] = nil
+end
+
 function console.defineCommand(name, description, implementation, hidden)
 	console.commands[name] = {
 		description = description,
@@ -390,6 +394,50 @@ console.defineCommand(
 	end
 )
 
+console.defineCommand(
+	"flush",
+	"Flush console history to disk",
+	function(file)
+		if file then
+			local t = love.timer.getTime()
+
+			love.filesystem.write(file, "")
+			local buffer = ""
+			local lines = 0
+			for _, v in ipairs(console.logs) do
+				buffer = buffer .. v.msg .. "\n"
+				lines = lines + 1
+				if lines >= 2048 then
+					love.filesystem.append(file, buffer)
+					lines = 0
+					buffer = ""
+				end
+			end
+			love.filesystem.append(file, buffer)
+
+			t = love.timer.getTime() - t
+			console.i(string.format("Successfully flushed console logs to \"%s\" in %fs.", love.filesystem.getSaveDirectory() .. "/" .. file, t))
+		else
+			console.e("Usage: flush <filename>")
+		end
+	end
+)
+
+function console.invokeCommand(name, ...)
+	local args = {...}
+	if console.commands[name] ~= nil then
+		local status, error = pcall(function()
+			console.commands[name].implementation(unpack(args))
+		end)
+		if not status then
+			console.e(error)
+			console.e(debug.traceback())
+		end
+	else
+		console.e("Command \"" .. name .. "\" not supported, type help for help.")
+	end
+end
+
 function console.defaultInputCallback(input)
 	local commands = string_split(input, ";")
 
@@ -397,21 +445,12 @@ function console.defaultInputCallback(input)
 		local args = merge_quoted(string_split(trim(line), " "))
 		local name = args[1]
 		table.remove(args, 1)
-		if console.commands[name] ~= nil then
-			local status, error = pcall(function()
-				-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
-				console.commands[name].implementation(unpack(merge_quoted(args)))
-			end)
-			if not status then
-				console.e(error)
-			end
-		else
-			console.e("Command \"" .. name .. "\" not supported, type help for help.")
-		end
+		console.invokeCommand(name, unpack(merge_quoted(args)))
 	end
 end
 
 function a(str, level)
+	str = tostring(str)
 	for _, str in ipairs(string_split(str, "\n")) do
 		table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
 		console.lastLine = #console.logs
