@@ -26,7 +26,7 @@ local console = {
 		SOFTWARE.
 	]],
 	
-	_KEY_TOGGLE = "`", --"f2",
+	_KEY_TOGGLE = "`",--"f2",--
 	_KEY_SUBMIT = "return",
 	_KEY_CLEAR = "escape",
 	_KEY_DELETE = "backspace",
@@ -43,8 +43,9 @@ local console = {
 	lastLine = 0, 
 	input = "",
 	ps = "> ",
-	useScissors = false,
-	motd = "Greetings, traveler!\nType \"help\" for an index of available commands.",
+	mode = "none", --Options are "none", "wrap", "scissors" or "bind"
+	--useScissors = false,
+	motd = 'Greetings, traveler!\nType "help" for an index of available commands.',
 
 	-- This table has as its keys the names of commands as
 	-- strings, which the user must type to run the command.  The
@@ -77,6 +78,22 @@ local down = function (x, y, w)
 		x + w, y;
 		x + w/2, y + h
 	}
+end
+--When you use wrap or bind the total number of lines depends 
+--on the number of lines used by each entry.
+local totalLines = function ()
+	if console.mode == "wrap" or console.mode == "bind" then
+		local a, b = 1, 1
+		local width = console.w - console.margin * 2
+		for i,t in ipairs(console.logs) do
+			b = a
+			local _,u = console.font:getWrap(t.msg, width)
+			a = a + u
+		end
+		return a
+	else
+		return #console.logs
+	end
 end
 
 local function toboolean(v)
@@ -118,13 +135,13 @@ local function merge_quoted(t)
 	local buf = ""
 	for k, v in ipairs(t) do
 		local f, l = v:sub(1,1), v:sub(v:len())
-		if f == "\"" and l ~= "\"" then
+		if f == '"' and l ~= '"' then
 			merging = true
 			buf = v
 		else
 			if merging then
 				buf = buf .. " " .. v
-				if l == "\"" then
+				if l == '"' then
 					merging = false
 					table.insert(ret, buf:sub(2,-2))
 				end
@@ -140,9 +157,11 @@ local function merge_quoted(t)
 	return ret
 end
 
-function console.load(font, keyRepeat, inputCallback, useScissors)
+function console.load(font, keyRepeat, inputCallback, mode)
 
-	console.useScissors = useScissors or console.useScissors
+	if mode == "none" or mode == "wrap" or mode == "scissors" or mode == "bind" then
+		console.mode = mode
+	end
 
 	love.keyboard.setKeyRepeat(keyRepeat or false)
 
@@ -150,6 +169,8 @@ function console.load(font, keyRepeat, inputCallback, useScissors)
 	console.fontSize	= font and font:getHeight() or console.fontSize
 	console.margin		= console.fontSize
 	console.lineHeight	= console.fontSize * 1.3
+	
+	console.font:setLineHeight(1.3)
 
 	console.x, console.y = 0, 0
 
@@ -232,10 +253,11 @@ function console.draw()
 	love.graphics.setBlendMode("alpha")
 	love.graphics.setColorMask(true,true,true,true)
 	love.graphics.setCanvas()
-	if not console.useScissors then
-		love.graphics.setScissor()
-	else
+	
+	if console.mode == "scissors" or console.mode == "bind" then
 		love.graphics.setScissor(console.x, console.y, console.w, console.h + console.lineHeight)
+	else
+		love.graphics.setScissor()
 	end
 
 	-- draw console
@@ -257,15 +279,36 @@ function console.draw()
 	if console.lastLine < #console.logs then
 		love.graphics.polygon("fill", down(console.x + console.w - console.margin, console.y +console.h - console.margin * 2, console.margin))
 	end
-
-	for i, t in pairs(console.logs) do
-		if i > console.firstLine and i <= console.lastLine then
-			local color = console.colors[t.level]
-			love.graphics.setColor(color.r, color.g, color.b, color.a)
-			love.graphics.print(t.msg, console.x + console.margin, console.y + (i - console.firstLine)*console.lineHeight)
+	
+	--Wrap and Bind are more complex than the normal mode so they are separated
+	if console.mode == "wrap" or console.mode == "bind" then
+		local x, width = console.x + console.margin, console.w - console.margin * 2
+		local k, j = 1,1
+		local lines = totalLines()
+		love.graphics.setScissor(x, console.y, width, (console.linesPerConsole + 1) * console.lineHeight)
+		for i, t in ipairs(console.logs) do
+			local _,u = console.font:getWrap(t.msg, width)
+			j = k + u
+			if j > console.firstLine and k <= console.lastLine then
+				local color = console.colors[t.level]
+				love.graphics.setColor(color.r, color.g, color.b, color.a)
+				
+				local y = console.y + (k - console.firstLine)*console.lineHeight
+				
+				love.graphics.printf(t.msg, x, y, width)
+			end
+			k = j
+		end
+	else
+		--This is the normal section
+		for i, t in ipairs(console.logs) do
+			if i > console.firstLine and i <= console.lastLine then
+				local color = console.colors[t.level]
+				love.graphics.setColor(color.r, color.g, color.b, color.a)
+				love.graphics.print(t.msg, console.x + console.margin, console.y + (i - console.firstLine)*console.lineHeight)
+			end
 		end
 	end
-
 	-- rollback
 	love.graphics.setCanvas(canvas)
 	love.graphics.pop()
@@ -297,7 +340,7 @@ function console.mousepressed( x, y, button )
 	end
 
 	if button == "wd" then
-		console.firstLine = math.min(#console.logs - 1, console.firstLine + 1)
+		console.firstLine = math.min(totalLines() - 1, console.firstLine + 1)
 		consumed = true
 	end
 	console.lastLine = console.firstLine + console.linesPerConsole
@@ -400,7 +443,7 @@ function console.defaultInputCallback(input)
 			-- I'm not sure what's going on causing this to need to run twice sometimes - but I haven't broken it since.
 			console.commands[name].implementation(merge_quoted(args))
 		else
-			console.e("Command \"" .. name .. "\" not supported, type help for help.")
+			console.e('Command "' .. name .. '" not supported, type help for help.')
 		end
 	end
 end
@@ -419,7 +462,7 @@ end
 function a(str, level)
 	for str in string_split(str, "\n") do
 		table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
-		console.lastLine = #console.logs
+		console.lastLine = totalLines()
 		console.firstLine = console.lastLine - console.linesPerConsole
 	end
 end
