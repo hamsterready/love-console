@@ -26,7 +26,7 @@ local console = {
 		SOFTWARE.
 	]],
 	
-	_KEY_TOGGLE = "`",
+	_KEY_TOGGLE = "`", --"f2",
 	_KEY_SUBMIT = "return",
 	_KEY_CLEAR = "escape",
 	_KEY_DELETE = "backspace",
@@ -34,7 +34,6 @@ local console = {
   -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
 
 	visible = false, 
-	keyCode = "f2", 
 	delta = 0, 
 	logs = {}, 
 	linesPerConsole = 0, 
@@ -60,6 +59,25 @@ local console = {
 	-- entries to this table.
 	commands = {} 
 }
+local up = function (x, y, w)
+	w = w * .7
+	local h = w * .7
+	return {
+		x, y + h;
+		x + w, y + h;
+		x + w/2, y
+	}
+end
+
+local down = function (x, y, w)
+	w = w * .7
+	local h = w * .7
+	return {
+		x, y;
+		x + w, y;
+		x + w/2, y + h
+	}
+end
 
 local function toboolean(v)
 	return (type(v) == "string" and v == "true") or (type(v) == "string" and v == "1") or (type(v) == "number" and v ~= 0) or (type(v) == "boolean" and v)
@@ -123,7 +141,6 @@ local function merge_quoted(t)
 end
 
 function console.load(font, keyRepeat, inputCallback, useScissors)
-function console.load( keyCode, fontSize, keyRepeat, inputCallback)
 
 	console.useScissors = useScissors or console.useScissors
 
@@ -234,11 +251,11 @@ function console.draw()
 	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.y + console.h + (console.lineHeight - console.fontSize) / 2 -1 )
 
 	if console.firstLine > 0 then
-		love.graphics.print("^", console.x + console.w - console.margin, console.y + console.margin)
+		love.graphics.polygon("fill", up(console.x + console.w - console.margin, console.y + console.margin, console.margin))
 	end
 
 	if console.lastLine < #console.logs then
-		love.graphics.print("v", console.x + console.w - console.margin, console.y + console.h - console.margin * 2)
+		love.graphics.polygon("fill", down(console.x + console.w - console.margin, console.y +console.h - console.margin * 2, console.margin))
 	end
 
 	for i, t in pairs(console.logs) do
