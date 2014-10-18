@@ -1,5 +1,8 @@
 local console = {
-	_LICENSE = [[
+	_VERSION     = 'love-console v0.1.0',
+	_DESCRIPTION = 'Simple love2d console overlay',
+	_URL         = 'https://github.com/hamsterready/love-console',
+	_LICENSE     = [[
 		The MIT License (MIT)
 
 		Copyright (c) 2014 Maciej Lopacinski
@@ -22,28 +25,30 @@ local console = {
 		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 		SOFTWARE.
 	]],
-	_VERSION = 'love-console v0.1.0',
-	_DESCRIPTION = 'Simple love2d console overlay',
-	_URL = 'https://github.com/hamsterready/love-console',
+	
 	_KEY_TOGGLE = "`",
 	_KEY_SUBMIT = "return",
 	_KEY_CLEAR = "escape",
 	_KEY_DELETE = "backspace",
+  -- hm, should it be stored in console or as module locals?
+  -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
 
-	visible = false,
-	delta = 0,
-	logs = {},
-	linesPerConsole = 0,
-	fontSize = 20,
-	font = nil,
-	firstLine = 0,
-	lastLine = 0,
+	visible = false, 
+	keyCode = "f2", 
+	delta = 0, 
+	logs = {}, 
+	linesPerConsole = 0, 
+	fontSize = 20, 
+	font = nil, 
+	firstLine = 0, 
+	lastLine = 0, 
 	input = "",
 	ps = "> ",
+	useScissors = false,
 	motd = "Greetings, traveler!\nType \"help\" for an index of available commands.",
 
 	-- This table has as its keys the names of commands as
-	-- strings, which the user must type to run the command. The
+	-- strings, which the user must type to run the command.  The
 	-- values are themselves tables with two properties:
 	--
 	-- 1. 'description' A string of information to show via the
@@ -53,7 +58,7 @@ local console = {
 	--
 	-- See the function defineCommand() for examples of adding
 	-- entries to this table.
-	commands = {}
+	commands = {} 
 }
 
 local function toboolean(v)
@@ -89,74 +94,6 @@ local function string_split(s, d)
 	return t
 end
 
-<<<<<<< HEAD
-  _VERSION     = 'love-console v0.1.0',
-  _DESCRIPTION = 'Simple love2d console overlay',
-  _URL         = 'https://github.com/hamsterready/love-console',
-  _LICENSE     = [[
-The MIT License (MIT)
-
-Copyright (c) 2014 Maciej Lopacinski
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-  ]],
-
-
-  -- hm, should it be stored in console or as module locals?
-  -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
-
-	visible = false, 
-	keyCode = "f2", 
-	delta = 0, 
-	logs = {}, 
-	linesPerConsole = 0, 
-	fontSize = 20, 
-	font = nil, 
-	firstLine = 0, 
-	lastLine = 0, 
-        input = "",
-        ps = "> ",
-        useScissors = false,
-
-        -- This table has as its keys the names of commands as
-        -- strings, which the user must type to run the command.  The
-        -- values are themselves tables with two properties:
-        --
-        -- 1. 'description' A string of information to show via the
-        -- /help command.
-        --
-        -- 2. 'implementation' A function implementing the command.
-        --
-        -- See the function defineCommand() for examples of adding
-        -- entries to this table.
-        commands = {} }
-
-function console.load( keyCode, fontSize, keyRepeat, inputCallback, useScissors )
-	love.keyboard.setKeyRepeat(keyRepeat or false)
-
-	console.useScissors = useScissors or console.useScissors
-	console.keyCode = keyCode or console.keyCode
-	console.fontSize = fontSize or console.fontSize
-	console.margin = console.fontSize
-	console.font = love.graphics.newFont(console.fontSize)
-	console.lineHeight = console.fontSize * 1.4
-=======
 local function merge_quoted(t)
 	local ret = {}
 	local merging = false
@@ -185,14 +122,18 @@ local function merge_quoted(t)
 	return ret
 end
 
-function console.load(font, keyRepeat, inputCallback)
+function console.load(font, keyRepeat, inputCallback, useScissors)
+function console.load( keyCode, fontSize, keyRepeat, inputCallback)
+
+	console.useScissors = useScissors or console.useScissors
+
 	love.keyboard.setKeyRepeat(keyRepeat or false)
 
 	console.font		= font or love.graphics.newFont(console.fontSize)
 	console.fontSize	= font and font:getHeight() or console.fontSize
 	console.margin		= console.fontSize
 	console.lineHeight	= console.fontSize * 1.3
->>>>>>> origin/pr/4
+
 	console.x, console.y = 0, 0
 
 	console.colors = {}
@@ -281,13 +222,6 @@ function console.draw()
 	end
 
 	-- draw console
-<<<<<<< HEAD
-	love.graphics.setColor(console.colors.background)
-	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
-	love.graphics.setColor(console.colors.input)
-	love.graphics.rectangle("fill", console.x, console.y + console.h, console.w, console.lineHeight)
-	love.graphics.setColor(console.colors.default)
-=======
 	local color = console.colors.background
 	love.graphics.setColor(color.r, color.g, color.b, color.a)
 	love.graphics.rectangle("fill", console.x, console.y, console.w, console.h)
@@ -296,7 +230,6 @@ function console.draw()
 	love.graphics.rectangle("fill", console.x, console.h, console.w, console.lineHeight)
 	color = console.colors.default
 	love.graphics.setColor(color.r, color.g, color.b, color.a)
->>>>>>> origin/pr/4
 	love.graphics.setFont(console.font)
 	love.graphics.print(console.ps .. " " .. console.input, console.x + console.margin, console.y + console.h + (console.lineHeight - console.fontSize) / 2 -1 )
 
