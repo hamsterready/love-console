@@ -25,13 +25,13 @@ local console = {
 		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 		SOFTWARE.
 	]],
+	-- hm, should it be stored in console or as module locals?
+	-- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
 	
 	_KEY_TOGGLE = "`",--"f2",--
 	_KEY_SUBMIT = "return",
 	_KEY_CLEAR = "escape",
 	_KEY_DELETE = "backspace",
-  -- hm, should it be stored in console or as module locals?
-  -- need to read more http://kiki.to/blog/2014/03/31/rule-2-return-a-local-table/
 
 	visible = false, 
 	delta = 0, 
@@ -44,15 +44,14 @@ local console = {
 	input = "",
 	ps = "> ",
 	mode = "none", --Options are "none", "wrap", "scissors" or "bind"
-	--useScissors = false,
-	motd = 'Greetings, traveler!\nType "help" for an index of available commands.',
+	msg = 'Welcome user!\nType "help" for an index of available commands.',
 
 	-- This table has as its keys the names of commands as
 	-- strings, which the user must type to run the command.  The
 	-- values are themselves tables with two properties:
 	--
 	-- 1. 'description' A string of information to show via the
-	-- /help command.
+	-- help command.
 	--
 	-- 2. 'implementation' A function implementing the command.
 	--
@@ -60,6 +59,7 @@ local console = {
 	-- entries to this table.
 	commands = {} 
 }
+--Dinamyc polygons used to draw the arrows
 local up = function (x, y, w)
 	w = w * .7
 	local h = w * .7
@@ -79,7 +79,7 @@ local down = function (x, y, w)
 		x + w/2, y + h
 	}
 end
---When you use wrap or bind the total number of lines depends 
+--When you use wrap or bind, the total number of lines depends 
 --on the number of lines used by each entry.
 local totalLines = function ()
 	if console.mode == "wrap" or console.mode == "bind" then
@@ -195,8 +195,8 @@ function console.newHotkeys(toggle, submit, clear, delete)
 	console._KEY_DELETE = delete or console._KEY_DELETE
 end
 
-function console.setMotd(message)
-	console.motd = message
+function console.setMsg(message)
+	console.msg = message
 end
 
 function console.resize( w, h )
@@ -398,36 +398,35 @@ console.defineCommand(
 		console.logs = {}
 	end
 )
-
+--THIS IS A REALLY DANGEROUS FUNCTION, REMOVE IT IF YOU DONT NEED IT
 console.defineCommand(
-	"sv_cheats",
-	"~It is a mystery~",
+	"lua",
+	"Lets you run lua code from the terminal",
 	function(args)
-		local change = toboolean(dopefish)
-		dopefish = toboolean(args[1])
-		change = dopefish ~= change
-		if not change then
-			console.e("No change")
-			return
-		end
-		if dopefish then
-			console.e("The rain in spain stays mainly in the plain.")
-		else
-			console.i("How now brown cow.")
+		local t = {}
+		for k,v in pairs(args) do
+			local ok,err = pcall(loadstring(v))
+			if ok then
+				if err then
+					console.d(err)
+				end
+			else
+				console.e(err)
+			end
 		end
 	end,
 	true
 )
 
 console.defineCommand(
-	"motd",
+	"msg",
 	"Shows/sets the intro message.",
 	function(args)
 		if args[1] then
-			console.motd = args[1]
-			console.i("Motd updated.")
+			console.msg = args[1]
+			console.i("Message updated.")
 		else
-			console.i(console.motd)
+			console.i(console.msg)
 		end
 	end
 )
@@ -469,6 +468,6 @@ end
 
 -- auto-initialize so that console.load() is optional
 console.load()
-console.i(console.motd)
+console.i(console.msg)
 
 return console
