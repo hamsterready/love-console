@@ -39,7 +39,7 @@ function love.keypressed(key)
 end
 
 function love.textinput(t)
-  console.textInput(t)
+  console.textinput(t)
 end
 
 function love.resize( w, h )
