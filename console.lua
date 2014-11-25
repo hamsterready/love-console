@@ -474,7 +474,13 @@ console.defineCommand(
 	"lua",
 	"Lets you run lua code from the terminal",
 	function(args)
-		local t = {}
+		if args == nil then
+			console.i("This command lets you run lua code from the terminal.")
+			console.i("It's a really dangerous command. Don't use it!")
+			return
+		elseif type(args) == "string" then 
+			args = {args}
+		end
 		for k,v in pairs(args) do
 			local ok,err = pcall(loadstring(v))
 			if ok then
