@@ -50,7 +50,7 @@ local console = {
 	input = "",
 	ps = "> ",
 	mode = "none", --Options are "none", "wrap", "scissors" or "bind"
-	msg = 'Welcome user!\nType "help" for an index of available commands.',
+	motd = 'Welcome user!\nType "help" for an index of available commands.',
 
 	-- This table has as its keys the names of commands as
 	-- strings, which the user must type to run the command.  The
@@ -221,8 +221,8 @@ function console.newHotkeys(toggle, submit, clear, delete)
 	console._KEY_DELETE = delete or console._KEY_DELETE
 end
 
-function console.setMsg(message)
-	console.msg = message
+function console.setMotd(message)
+	console.motd = message
 end
 
 function console.resize( w, h )
@@ -496,14 +496,14 @@ console.defineCommand(
 )
 
 console.defineCommand(
-	"msg",
+	"motd",
 	"Shows/sets the intro message.",
 	function(motd)
 		if motd then
 			console.motd = motd
 			console.i("Motd updated.")
 		else
-			console.i(console.msg)
+			console.i(console.motd)
 		end
 	end
 )
@@ -575,6 +575,6 @@ end
 
 -- auto-initialize so that console.load() is optional
 console.load()
-console.i(console.msg)
+console.i(console.motd)
 
 return console
