@@ -102,27 +102,6 @@ local totalLines = function ()
 	end
 end
 
--- used to draw the arrows
-local function up(x, y, w)
-	w = w * .7
-	local h = w * .7
-	return {
-		x, y + h,
-		x + w, y + h,
-		x + w/2, y
-	}
-end
-
-local function down(x, y, w)
-	w = w * .7
-	local h = w * .7
-	return {
-		x, y,
-		x + w, y,
-		x + w/2, y + h
-	}
-end
-
 local function toboolean(v)
 	return (type(v) == "string" and v == "true") or (type(v) == "string" and v == "1") or (type(v) == "number" and v ~= 0) or (type(v) == "boolean" and v)
 end
