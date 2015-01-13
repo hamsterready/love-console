@@ -164,7 +164,7 @@ local function merge_quoted(t)
 	return ret
 end
 
-function console.load(font, keyRepeat, inputCallback, mode)
+function console.load(font, keyRepeat, inputCallback, mode, levels)
 
 	if mode == "none" or mode == "wrap" or mode == "scissors" or mode == "bind" then
 		console.mode = mode
@@ -188,6 +188,7 @@ function console.load(font, keyRepeat, inputCallback, mode)
 	console.colors["input"]      = 	{r = 23, g = 55, b = 86, a = 255}
 	console.colors["default"]    = 	{r = 215, g = 213, b = 174, a = 255}
 
+	console.levels = levels or {info = true, debug=true, error=true}
 	console.inputCallback = inputCallback or console.defaultInputCallback
 
 	console.resize(love.graphics.getWidth(), love.graphics.getHeight())
@@ -395,15 +396,21 @@ function console.mousepressed( x, y, button )
 end
 
 function console.d(str)
-	a(str, 'D')
+	if console.levels.debug then
+		a(str, 'D')
+	end
 end
 
 function console.i(str)
-	a(str, 'I')
+	if console.levels.info then
+		a(str, 'I')
+	end
 end
 
 function console.e(str)
-	a(str, 'E')
+	if console.levels.error then
+		a(str, 'E')
+	end
 end
 
 function console.clearCommand(name)
