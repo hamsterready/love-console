@@ -220,6 +220,7 @@ end
 function console.textinput(t)
 	if t ~= console._KEY_TOGGLE and console.visible then
 		console.input = console.input .. t
+		return true
 	end
 end
 
