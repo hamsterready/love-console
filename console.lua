@@ -556,7 +556,7 @@ function a(str, level)
 		table.insert(console.logs, #console.logs + 1, {level = level, msg = string.format("%07.02f [".. level .. "] %s", console.delta, str)})
 		console.lastLine = totalLines()
 		console.firstLine = console.lastLine - console.linesPerConsole
-		print(console.logs[console.lastLine].msg)
+		-- print(console.logs[console.lastLine].msg)
 	end
 end
 
