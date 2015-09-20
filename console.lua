@@ -460,24 +460,17 @@ console.defineCommand(
 console.defineCommand(
 	"lua",
 	"Lets you run lua code from the terminal",
-	function(args)
-		if args == nil then
+	function(...)
+		local cmd = ""
+		for i = 1, select("#", ...) do
+			cmd = cmd .. tostring(select(i, ...)) .. " "
+		end
+		if cmd == "" then
 			console.i("This command lets you run lua code from the terminal.")
 			console.i("It's a really dangerous command. Don't use it!")
 			return
-		elseif type(args) == "string" then 
-			args = {args}
 		end
-		for k,v in pairs(args) do
-			local ok,err = pcall(loadstring(v))
-			if ok then
-				if err then
-					console.d(err)
-				end
-			else
-				console.e(err)
-			end
-		end
+		xpcall(loadstring(cmd), console.e)
 	end,
 	true
 )
