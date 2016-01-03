@@ -1,7 +1,7 @@
 local console = require 'console'
 
 function love.load()
-  -- Step 1: load console, parameters are optional, defaults enumerated below
+  --  Step 1: load console, parameters are optional, defaults enumerated below
   --  The key to open/close console == `
   --  font size == 14
   --  false = no key repeat by default, pressing (and not releasing backspace) will act in a strange way  
@@ -10,13 +10,60 @@ function love.load()
   -- It is fine not to run console.load() 
   console.load(love.graphics.newFont("inconsolata/Inconsolata.otf", 16))
 
-  console.defineCommand(
+  console.defineCommand(    -- How to create a custom command
     "hello",
-    "World",
+    "Print 'Hello World'.",
     function()     
       console.i("Hello World!!!")
     end
   )
+
+  console.defineCommand(    -- Custom command tree
+  "test",
+  "test arguements",
+  function(...)
+    local cmd = {}
+    for i = 1, select("#", ...) do
+      cmd[i] = tostring(select(i, ...))
+    end
+    
+    if cmd[1] == "help" then
+      console.i("* How to use multiple custom args.")
+      console.i("* Commands:")
+      console.i("test one")
+      console.i("test two")
+      console.i("test three alpha")
+      console.i("test three bravo [msg]")
+      return
+
+    elseif cmd[1] == "one" then
+      console.d("one")
+      return
+
+    elseif cmd[1] == "two" then
+      console.d("two")
+      return
+
+    elseif cmd[1] == "three" then
+      if cmd[2] == "alpha" then
+        console.d("three alpha")
+      elseif cmd[2] == "bravo" then
+        if cmd[3] then
+          console.d("three bravo " .. cmd[3])
+        else
+          console.e("Wrong Synax!")
+        end 
+      else
+        console.e("Wrong Synax!")
+      end   
+      return
+    else
+      console.e("Wrong Synax!")
+    end
+  end,
+  true
+)
+
 end
 
 function love.update( dt )
