@@ -63,7 +63,6 @@ function love.load()
   end,
   true
 )
-
 end
 
 function love.update( dt )
