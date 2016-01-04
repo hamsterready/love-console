@@ -51,14 +51,14 @@ function love.load()
         if cmd[3] then
           console.d("three bravo " .. cmd[3])
         else
-          console.e("Wrong Synax!")
+          console.e("Wrong Syntax!")
         end 
       else
-        console.e("Wrong Synax!")
+        console.e("Wrong Syntax!")
       end   
       return
     else
-      console.e("Wrong Synax!")
+      console.e("Wrong Syntax!")
     end
   end,
   true
