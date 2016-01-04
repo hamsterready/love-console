@@ -65,7 +65,7 @@ local console = {
 	-- entries to this table.
 	commands = {} 
 }
---Dinamyc polygons used to draw the arrows
+-- Dynamic polygons used to draw the arrows
 local up = function (x, y, w)
 	w = w * .7
 	local h = w * .7
