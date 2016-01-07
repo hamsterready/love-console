@@ -34,9 +34,13 @@ local console = {
 	_KEY_DELETE = "backspace",
 	_KEY_UP = "up",
 	_KEY_DOWN = "down",
+	_KEY_LEFT = "left",
+	_KEY_RIGHT = "right",
 	_KEY_PAGEDOWN = "pagedown",
 	_KEY_PAGEUP = "pageup",
 
+	cursor = 0,
+	cursorlife = 1,
 	visible = false,
 	delta = 0,
 	logs = {},
@@ -219,7 +223,15 @@ end
 
 function console.textinput(t)
 	if t ~= console._KEY_TOGGLE and console.visible then
-		console.input = console.input .. t
+		console.cursor = console.cursor + 1
+		local x = string.sub(console.input, 0, console.cursor) .. t
+		if console.cursor < #console.input then
+			x = x .. string.sub(console.input, console.cursor+1)
+		end
+		console.input = x
+		
+
+		--console.input = console.input .. t
 		return true
 	end
 end
@@ -233,6 +245,7 @@ function console.keypressed(key)
 			console.historyPosition = #console.history
 		end
 		console.input = ""
+		console.cursor = 0
 		return valid
 	end
 	if key ~= console._KEY_TOGGLE and console.visible then
@@ -244,7 +257,18 @@ function console.keypressed(key)
 		elseif key == console._KEY_CLEAR then
 			console.input = ""
 		elseif key == console._KEY_DELETE then
-			console.input = string.sub(console.input, 0, #console.input - 1)
+			if console.cursor >= 0 then
+				local t = string.sub(console.input, 0, console.cursor) 
+				if console.cursor < #console.input then
+					t = t .. string.sub(console.input, console.cursor+2)
+				end
+				console.input = t
+				console.cursor = console.cursor - 1
+			end
+		elseif key == console._KEY_LEFT and console.cursor > 0 then
+			console.cursor = console.cursor - 1
+		elseif key == console._KEY_RIGHT and console.cursor < #console.input then
+			console.cursor = console.cursor + 1
 		end
 
 		-- history traversal
@@ -274,12 +298,16 @@ function console.keypressed(key)
 	elseif key == console._KEY_TOGGLE then
 		console.visible = not console.visible
 		return true
+	else
+
 	end
 	return false
 end
 
 function console.update( dt )
 	console.delta = console.delta + dt
+	console.cursorlife = console.cursorlife - 1*dt
+	if console.cursorlife < 0 then console.cursorlife = 1 end
 end
 
 function console.draw()
@@ -357,6 +385,23 @@ function console.draw()
 			end
 		end
 	end
+
+	-- cursor
+
+	if console.cursorlife < 0.5 then
+		local str = tostring(console.input)
+		local offset = 1
+		while console.font:getWidth(str) > console.w - (console.fontSize / 4) do
+			str = str:sub(2)
+			offset = offset + 1
+		end
+
+		local cursorx = ((console.x + (console.margin*2) + (console.fontSize/4)) + console.font:getWidth(str:sub(1, console.cursor + offset)))
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.line(cursorx, console.y + console.h + console.lineHeight -5, cursorx, console.y + console.h +5)
+	end
+
+
 	-- rollback
 	love.graphics.setCanvas(canvas)
 	love.graphics.pop()
