@@ -116,9 +116,9 @@ function drawGrid( )
   for i =0, math.floor(1920/100) do
     for j=0, math.floor(1080/100) do
       if (i + j) % 2 == 0 then
-        love.graphics.setColor(255, 255, 255, 200)
+        love.graphics.setColor(255/255, 255/255, 255/255, 200/255)
       else
-        love.graphics.setColor(255, 255, 255, 220)
+        love.graphics.setColor(255/255, 255/255, 255/255, 220/255)
       end 
       love.graphics.rectangle("fill", i*100, j*100, 100, 100)
     end
