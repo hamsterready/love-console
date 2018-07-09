@@ -242,7 +242,7 @@ function console.keypressed(key)
 		local valid = trimmed ~= ""
 		if valid then
 			table.insert(console.history, trimmed)
-			console.historyPosition = #console.history
+			console.historyPosition = #console.history + 1
 		end
 		console.input = ""
 		console.cursor = 0
@@ -277,9 +277,9 @@ function console.keypressed(key)
 				console.historyPosition = math.min(math.max(console.historyPosition - 1, 1), #console.history)
 				console.input = console.history[console.historyPosition]
 			elseif key == console._KEY_DOWN then
-				local pushing = console.historyPosition + 1 == #console.history + 1
-				console.historyPosition = math.min(console.historyPosition + 1, #console.history)
-				console.input = console.history[console.historyPosition]
+				local pushing = console.historyPosition + 1 > #console.history + 1
+				console.historyPosition = math.min(console.historyPosition + 1, #console.history + 1)
+				console.input = console.history[console.historyPosition] or ""
 				if pushing then
 					console.input = ""
 				end
