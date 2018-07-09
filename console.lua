@@ -184,13 +184,13 @@ function console.load(font, keyRepeat, inputCallback, mode, levels)
 	console.x, console.y = 0, 0
 
 	console.colors = {}
-	console.colors["I"] = {r = 251, g = 241, b = 213, a = 255}
-	console.colors["D"] = {r = 235, g = 197, b =  50, a = 255}
-	console.colors["E"] = {r = 222, g =  69, b =  61, a = 255}
+	console.colors["I"] = {r = 251/255, g = 241/255, b = 213/255, a = 255/255}
+	console.colors["D"] = {r = 235/255, g = 197/255, b =  50/255, a = 255/255}
+	console.colors["E"] = {r = 222/255, g =  69/255, b =  61/255, a = 255/255}
 	
-	console.colors["background"] = 	{r = 23, g = 55, b = 86, a = 190}
-	console.colors["input"]      = 	{r = 23, g = 55, b = 86, a = 255}
-	console.colors["default"]    = 	{r = 215, g = 213, b = 174, a = 255}
+	console.colors["background"] = 	{r =  23/255, g =  55/255, b =  86/255, a = 190/255}
+	console.colors["input"]      = 	{r =  23/255, g =  55/255, b =  86/255, a = 255/255}
+	console.colors["default"]    = 	{r = 215/255, g = 213/255, b = 174/255, a = 255/255}
 
 	console.levels = levels or {info = true, debug=true, error=true}
 	console.inputCallback = inputCallback or console.defaultInputCallback
